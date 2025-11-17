@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#10B981">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Monnificus">
+    <title>Monnificus Tracker v1.0</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #030712; color: #F9FAFB; overflow-x: hidden; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 1rem; }
+        .header { border-bottom: 2px solid rgba(16, 185, 129, 0.3); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        .header h1 { color: #10B981; font-size: 1.5rem; font-weight: bold; margin-bottom: 0.25rem; }
+        .header p { color: #9CA3AF; font-size: 0.875rem; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1.5rem; }
+        .stat-card { background: #111827; border: 1px solid #1F2937; border-radius: 0.5rem; padding: 1rem; }
+        .stat-label { color: #9CA3AF; font-size: 0.75rem; margin-bottom: 0.25rem; }
+        .stat-value { font-size: 1.5rem; font-weight: bold; font-family: 'Courier New', monospace; }
+        .stat-value.positive { color: #10B981; }
+        .stat-value.negative { color: #EF4444; }
+        .stat-value.neutral { color: #3B82F6; }
+        .stat-value.warning { color: #F59E0B; }
+        .section { background: #111827; border: 1px solid #1F2937; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
+        .section-title { color: #10B981; font-size: 1.125rem; font-weight: bold; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: bold; cursor: pointer; font-family: 'Courier New', monospace; transition: all 0.2s; width: 100%; font-size: 0.875rem; }
+        .btn-primary { background: #10B981; color: white; }
+        .btn-primary:hover { background: #059669; }
+        .btn-primary:disabled { background: #374151; cursor: not-allowed; opacity: 0.5; }
+        .btn-secondary { background: #1F2937; color: #D1D5DB; }
+        .btn-secondary:hover { background: #374151; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+        .btn-option { padding: 1rem; background: #1F2937; border: 2px solid transparent; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .btn-option.active { border-color: #10B981; background: rgba(16, 185, 129, 0.1); }
+        .btn-option.disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-option-title { font-weight: bold; font-family: 'Courier New', monospace; margin-bottom: 0.25rem; }
+        .btn-option-subtitle { font-size: 0.75rem; color: #9CA3AF; }
+        .input { width: 100%; padding: 0.75rem; background: #030712; border: 1px solid #374151; border-radius: 0.5rem; color: #F9FAFB; font-size: 0.875rem; margin-bottom: 1rem; }
+        .input:focus { outline: none; border-color: #10B981; }
+        .textarea { min-height: 80px; resize: vertical; }
+        .trade-item { background: #030712; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #1F2937; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+        .trade-info { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        .trade-badge { padding: 0.25rem 0.75rem; border-radius: 0.25rem; font-size: 0.75rem; font-weight: bold; font-family: 'Courier New', monospace; }
+        .trade-badge.alpha { background: rgba(59, 130, 246, 0.2); color: #3B82F6; }
+        .trade-badge.beta { background: rgba(168, 85, 247, 0.2); color: #A855F7; }
+        .trade-pnl { font-size: 1.125rem; font-weight: bold; font-family: 'Courier New', monospace; }
+        .alert { padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; border: 1px solid; }
+        .alert-warning { background: rgba(239, 68, 68, 0.1); border-color: #EF4444; color: #FCA5A5; }
+        .rules-list { color: #9CA3AF; font-size: 0.875rem; }
+        .rules-list div { padding: 0.5rem 0; border-bottom: 1px solid #1F2937; }
+        .rules-list div:last-child { border-bottom: none; }
+        .scenarios { font-size: 0.875rem; }
+        .scenario-item { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #1F2937; }
+        .scenario-item:last-child { border-bottom: none; }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.25rem; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .stat-value { font-size: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 MONNIFICUS TRACKER v1.0</h1>
+            <p>Système Asymétrique Alpha/Bêta • 9h45-11h30</p>
+        </div>
+        <div id="today-stats">
+            <h2 class="section-title">📅 AUJOURD'HUI</h2>
+            <div id="limit-alert" style="display: none;" class="alert alert-warning">
+                <strong>⚠️ LIMITE JOURNALIÈRE ATTEINTE</strong><br>Maximum 2 trades par jour • Revenez demain
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-label">PnL JOUR</div><div class="stat-value positive" id="today-pnl">+0$</div></div>
+                <div class="stat-card"><div class="stat-label">TRADES</div><div class="stat-value neutral" id="today-trades">0/2</div></div>
+                <div class="stat-card"><div class="stat-label">WIN RATE</div><div class="stat-value warning" id="today-winrate">0%</div></div>
+                <div class="stat-card"><div class="stat-label">STATUS</div><div style="font-size: 0.75rem; margin-top: 0.25rem;"><div id="alpha-status">○ ALPHA</div><div id="beta-status">○ BETA</div></div></div>
+            </div>
+        </div>
+        <div class="section">
+            <h2 class="section-title">➕ NOUVEAU TRADE</h2>
+            <div id="trade-form">
+                <div class="btn-group">
+                    <div class="btn-option active" id="alpha-btn" onclick="selectType('ALPHA')"><div class="btn-option-title">ALPHA</div><div class="btn-option-subtitle">TP: 240$ | SL: 140$</div></div>
+                    <div class="btn-option" id="beta-btn" onclick="selectType('BETA')"><div class="btn-option-title">BETA</div><div class="btn-option-subtitle">TP: 150$ | SL: 75$</div></div>
+                </div>
+                <input type="text" class="input" id="setup" placeholder="Setup (ex: Breakout 10h00)">
+                <input type="time" class="input" id="entry-time">
+                <div class="btn-group">
+                    <div class="btn-option active" id="win-btn" onclick="selectOutcome('WIN')"><div class="btn-option-title">✓ WIN</div><div class="btn-option-subtitle" id="win-amount">+240$</div></div>
+                    <div class="btn-option" id="loss-btn" onclick="selectOutcome('LOSS')"><div class="btn-option-title">✗ LOSS</div><div class="btn-option-subtitle" id="loss-amount">-140$</div></div>
+                </div>
+                <textarea class="input textarea" id="notes" placeholder="Notes (optionnel)"></textarea>
+                <button class="btn btn-primary" id="submit-btn" onclick="addTrade()">VALIDER TRADE</button>
+            </div>
+        </div>
+        <div class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 class="section-title" style="margin: 0;">📊 SEMAINE (7 jours)</h2>
+                <button class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.75rem;" onclick="exportCSV()">EXPORT CSV</button>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-label">PnL NET</div><div class="stat-value positive" id="week-pnl">+0$</div></div>
+                <div class="stat-card"><div class="stat-label">TRADES</div><div class="stat-value neutral" id="week-trades">0</div></div>
+                <div class="stat-card"><div class="stat-label">WIN RATE</div><div class="stat-value warning" id="week-winrate">0%</div></div>
+                <div class="stat-card"><div class="stat-label">PROFIT FACTOR</div><div class="stat-value" style="color: #A855F7;" id="week-pf">0.00</div></div>
+            </div>
+        </div>
+        <div class="section">
+            <h2 class="section-title">📋 HISTORIQUE (20 derniers)</h2>
+            <div id="trades-list"><div style="text-align: center; color: #6B7280; padding: 2rem;">Aucun trade enregistré.<br>Commencez votre première session !</div></div>
+        </div>
+        <div class="section">
+            <h2 class="section-title">⚡ RÈGLES MONNIFICUS v2.0</h2>
+            <div class="rules-list">
+                <div>✓ Maximum 2 trades par jour</div>
+                <div>✓ Créneau: 9h45-11h30</div>
+                <div>✓ Alpha: TP 240$ / SL 140$ (R:R 1.71)</div>
+                <div>✓ Bêta: TP 150$ / SL 75$ (R:R 2.0)</div>
+                <div>✓ 4 contrats par trade</div>
+                <div>✓ Aucune modification paramètres</div>
+            </div>
+        </div>
+        <div class="section">
+            <h2 class="section-title">📈 SCÉNARIOS ATTENDUS</h2>
+            <div class="scenarios">
+                <div class="scenario-item"><span style="color: #9CA3AF;">Win + Win:</span><span style="color: #10B981; font-weight: bold; font-family: 'Courier New', monospace;">+390$</span></div>
+                <div class="scenario-item"><span style="color: #9CA3AF;">Win + Loss:</span><span style="color: #10B981; font-weight: bold; font-family: 'Courier New', monospace;">+165$</span></div>
+                <div class="scenario-item"><span style="color: #9CA3AF;">Loss + Win:</span><span style="color: #10B981; font-weight: bold; font-family: 'Courier New', monospace;">+10$</span></div>
+                <div class="scenario-item"><span style="color: #9CA3AF;">Loss + Loss:</span><span style="color: #EF4444; font-weight: bold; font-family: 'Courier New', monospace;">-215$</span></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const TRADE_PARAMS = { ALPHA: { tp: 240, sl: -140 }, BETA: { tp: 150, sl: -75 } };
+        let currentTrade = { type: 'ALPHA', outcome: 'WIN' };
+        let trades = [];
+        function loadTrades() { const saved = localStorage.getItem('monnificus_trades'); if (saved) { trades = JSON.parse(saved); } updateUI(); }
+        function saveTrades() { localStorage.setItem('monnificus_trades', JSON.stringify(trades)); }
+        function selectType(type) { const todayTrades = getTodayTrades(); const hasAlpha = todayTrades.some(t => t.type === 'ALPHA'); const hasBeta = todayTrades.some(t => t.type === 'BETA'); if (type === 'ALPHA' && hasAlpha) return; if (type === 'BETA' && hasBeta) return; currentTrade.type = type; document.getElementById('alpha-btn').classList.toggle('active', type === 'ALPHA'); document.getElementById('beta-btn').classList.toggle('active', type === 'BETA'); updateAmounts(); }
+        function selectOutcome(outcome) { currentTrade.outcome = outcome; document.getElementById('win-btn').classList.toggle('active', outcome === 'WIN'); document.getElementById('loss-btn').classList.toggle('active', outcome === 'LOSS'); }
+        function updateAmounts() { const params = TRADE_PARAMS[currentTrade.type]; document.getElementById('win-amount').textContent = `+${params.tp}$`; document.getElementById('loss-amount').textContent = `${params.sl}$`; }
+        function getTodayTrades() { const today = new Date().toISOString().split('T')[0]; return trades.filter(t => t.date === today); }
+        function getWeekTrades() { const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7); return trades.filter(t => new Date(t.date) >= weekAgo); }
+        function addTrade() { const setup = document.getElementById('setup').value.trim(); const entryTime = document.getElementById('entry-time').value; const notes = document.getElementById('notes').value.trim(); if (!setup || !entryTime) { alert('Veuillez remplir le setup et l\'heure d\'entrée'); return; } const todayTrades = getTodayTrades(); if (todayTrades.length >= 2) { alert('Limite de 2 trades par jour atteinte !'); return; } const params = TRADE_PARAMS[currentTrade.type]; const pnl = currentTrade.outcome === 'WIN' ? params.tp : params.sl; const newTrade = { id: Date.now(), type: currentTrade.type, setup, entryTime, outcome: currentTrade.outcome, pnl, notes, date: new Date().toISOString().split('T')[0], timestamp: new Date().toISOString() }; trades.unshift(newTrade); saveTrades(); document.getElementById('setup').value = ''; document.getElementById('entry-time').value = ''; document.getElementById('notes').value = ''; updateUI(); }
+        function calculateStats(tradeList) { const totalPnL = tradeList.reduce((sum, t) => sum + t.pnl, 0); const wins = tradeList.filter(t => t.outcome === 'WIN').length; const winRate = tradeList.length ? ((wins / tradeList.length) * 100).toFixed(1) : 0; const grossWin = tradeList.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0); const grossLoss = Math.abs(tradeList.filter(t => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0)); const profitFactor = grossLoss ? (grossWin / grossLoss).toFixed(2) : '0.00'; return { totalPnL, winRate, profitFactor, totalTrades: tradeList.length }; }
+        function updateUI() { const todayTrades = getTodayTrades(); const weekTrades = getWeekTrades(); const todayStats = calculateStats(todayTrades); const weekStats = calculateStats(weekTrades); document.getElementById('today-pnl').textContent = (todayStats.totalPnL >= 0 ? '+' : '') + todayStats.totalPnL + '$'; document.getElementById('today-pnl').className = 'stat-value ' + (todayStats.totalPnL >= 0 ? 'positive' : 'negative'); document.getElementById('today-trades').textContent = todayTrades.length + '/2'; document.getElementById('today-winrate').textContent = todayStats.winRate + '%'; document.getElementById('week-pnl').textContent = (weekStats.totalPnL >= 0 ? '+' : '') + weekStats.totalPnL + '$'; document.getElementById('week-pnl').className = 'stat-value ' + (weekStats.totalPnL >= 0 ? 'positive' : 'negative'); document.getElementById('week-trades').textContent = weekStats.totalTrades; document.getElementById('week-winrate').textContent = weekStats.winRate + '%'; document.getElementById('week-pf').textContent = weekStats.profitFactor; const hasAlpha = todayTrades.some(t => t.type === 'ALPHA'); const hasBeta = todayTrades.some(t => t.type === 'BETA'); document.getElementById('alpha-status').textContent = (hasAlpha ? '✓' : '○') + ' ALPHA'; document.getElementById('alpha-status').style.color = hasAlpha ? '#10B981' : '#6B7280'; document.getElementById('beta-status').textContent = (hasBeta ? '✓' : '○') + ' BETA'; document.getElementById('beta-status').style.color = hasBeta ? '#10B981' : '#6B7280'; document.getElementById('limit-alert').style.display = todayTrades.length >= 2 ? 'block' : 'none'; document.getElementById('alpha-btn').classList.toggle('disabled', hasAlpha); document.getElementById('beta-btn').classList.toggle('disabled', hasBeta); document.getElementById('submit-btn').disabled = todayTrades.length >= 2; const tradesList = document.getElementById('trades-list'); if (trades.length === 0) { tradesList.innerHTML = '<div style="text-align: center; color: #6B7280; padding: 2rem;">Aucun trade enregistré.<br>Commencez votre première session !</div>'; } else { tradesList.innerHTML = trades.slice(0, 20).map(t => `<div class="trade-item"><div class="trade-info"><span class="trade-badge ${t.type.toLowerCase()}">${t.type}</span><span style="color: #9CA3AF; font-size: 0.875rem;">${t.date}</span><span style="color: #9CA3AF; font-size: 0.875rem;">${t.entryTime}</span><span style="color: #D1D5DB; font-size: 0.875rem;">${t.setup}</span></div><div class="trade-pnl ${t.pnl >= 0 ? 'positive' : 'negative'}">${t.pnl >= 0 ? '+' : ''}${t.pnl}$</div></div>`).join(''); } }
+        function exportCSV() { if (trades.length === 0) { alert('Aucun trade à exporter'); return; } const headers = ['Date', 'Type', 'Setup', 'Heure', 'Résultat', 'PnL', 'Notes']; const rows = trades.map(t => [t.date, t.type, t.setup, t.entryTime, t.outcome, t.pnl, t.notes || '']); const csv = [headers, ...rows].map(row => row.join(',')).join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `monnificus_trades_${new Date().toISOString().split('T')[0]}.csv`; a.click(); window.URL.revokeObjectURL(url); }
+        loadTrades();
+        updateAmounts();
+    </script>
+</body>
+</html>
